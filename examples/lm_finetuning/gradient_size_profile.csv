@@ -1,0 +1,399 @@
+,param_name,dtype,size
+0,bert.embeddings.word_embeddings.weight,torch.float16,"torch.Size([30522, 1024])"
+1,bert.embeddings.position_embeddings.weight,torch.float16,"torch.Size([512, 1024])"
+2,bert.embeddings.token_type_embeddings.weight,torch.float16,"torch.Size([2, 1024])"
+3,bert.embeddings.LayerNorm.weight,torch.float16,torch.Size([1024])
+4,bert.embeddings.LayerNorm.bias,torch.float16,torch.Size([1024])
+5,bert.encoder.layer.0.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+6,bert.encoder.layer.0.attention.self.query.bias,torch.float16,torch.Size([1024])
+7,bert.encoder.layer.0.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+8,bert.encoder.layer.0.attention.self.key.bias,torch.float16,torch.Size([1024])
+9,bert.encoder.layer.0.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+10,bert.encoder.layer.0.attention.self.value.bias,torch.float16,torch.Size([1024])
+11,bert.encoder.layer.0.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+12,bert.encoder.layer.0.attention.output.dense.bias,torch.float16,torch.Size([1024])
+13,bert.encoder.layer.0.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+14,bert.encoder.layer.0.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+15,bert.encoder.layer.0.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+16,bert.encoder.layer.0.intermediate.dense.bias,torch.float16,torch.Size([4096])
+17,bert.encoder.layer.0.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+18,bert.encoder.layer.0.output.dense.bias,torch.float16,torch.Size([1024])
+19,bert.encoder.layer.0.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+20,bert.encoder.layer.0.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+21,bert.encoder.layer.1.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+22,bert.encoder.layer.1.attention.self.query.bias,torch.float16,torch.Size([1024])
+23,bert.encoder.layer.1.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+24,bert.encoder.layer.1.attention.self.key.bias,torch.float16,torch.Size([1024])
+25,bert.encoder.layer.1.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+26,bert.encoder.layer.1.attention.self.value.bias,torch.float16,torch.Size([1024])
+27,bert.encoder.layer.1.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+28,bert.encoder.layer.1.attention.output.dense.bias,torch.float16,torch.Size([1024])
+29,bert.encoder.layer.1.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+30,bert.encoder.layer.1.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+31,bert.encoder.layer.1.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+32,bert.encoder.layer.1.intermediate.dense.bias,torch.float16,torch.Size([4096])
+33,bert.encoder.layer.1.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+34,bert.encoder.layer.1.output.dense.bias,torch.float16,torch.Size([1024])
+35,bert.encoder.layer.1.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+36,bert.encoder.layer.1.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+37,bert.encoder.layer.2.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+38,bert.encoder.layer.2.attention.self.query.bias,torch.float16,torch.Size([1024])
+39,bert.encoder.layer.2.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+40,bert.encoder.layer.2.attention.self.key.bias,torch.float16,torch.Size([1024])
+41,bert.encoder.layer.2.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+42,bert.encoder.layer.2.attention.self.value.bias,torch.float16,torch.Size([1024])
+43,bert.encoder.layer.2.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+44,bert.encoder.layer.2.attention.output.dense.bias,torch.float16,torch.Size([1024])
+45,bert.encoder.layer.2.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+46,bert.encoder.layer.2.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+47,bert.encoder.layer.2.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+48,bert.encoder.layer.2.intermediate.dense.bias,torch.float16,torch.Size([4096])
+49,bert.encoder.layer.2.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+50,bert.encoder.layer.2.output.dense.bias,torch.float16,torch.Size([1024])
+51,bert.encoder.layer.2.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+52,bert.encoder.layer.2.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+53,bert.encoder.layer.3.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+54,bert.encoder.layer.3.attention.self.query.bias,torch.float16,torch.Size([1024])
+55,bert.encoder.layer.3.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+56,bert.encoder.layer.3.attention.self.key.bias,torch.float16,torch.Size([1024])
+57,bert.encoder.layer.3.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+58,bert.encoder.layer.3.attention.self.value.bias,torch.float16,torch.Size([1024])
+59,bert.encoder.layer.3.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+60,bert.encoder.layer.3.attention.output.dense.bias,torch.float16,torch.Size([1024])
+61,bert.encoder.layer.3.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+62,bert.encoder.layer.3.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+63,bert.encoder.layer.3.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+64,bert.encoder.layer.3.intermediate.dense.bias,torch.float16,torch.Size([4096])
+65,bert.encoder.layer.3.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+66,bert.encoder.layer.3.output.dense.bias,torch.float16,torch.Size([1024])
+67,bert.encoder.layer.3.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+68,bert.encoder.layer.3.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+69,bert.encoder.layer.4.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+70,bert.encoder.layer.4.attention.self.query.bias,torch.float16,torch.Size([1024])
+71,bert.encoder.layer.4.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+72,bert.encoder.layer.4.attention.self.key.bias,torch.float16,torch.Size([1024])
+73,bert.encoder.layer.4.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+74,bert.encoder.layer.4.attention.self.value.bias,torch.float16,torch.Size([1024])
+75,bert.encoder.layer.4.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+76,bert.encoder.layer.4.attention.output.dense.bias,torch.float16,torch.Size([1024])
+77,bert.encoder.layer.4.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+78,bert.encoder.layer.4.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+79,bert.encoder.layer.4.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+80,bert.encoder.layer.4.intermediate.dense.bias,torch.float16,torch.Size([4096])
+81,bert.encoder.layer.4.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+82,bert.encoder.layer.4.output.dense.bias,torch.float16,torch.Size([1024])
+83,bert.encoder.layer.4.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+84,bert.encoder.layer.4.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+85,bert.encoder.layer.5.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+86,bert.encoder.layer.5.attention.self.query.bias,torch.float16,torch.Size([1024])
+87,bert.encoder.layer.5.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+88,bert.encoder.layer.5.attention.self.key.bias,torch.float16,torch.Size([1024])
+89,bert.encoder.layer.5.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+90,bert.encoder.layer.5.attention.self.value.bias,torch.float16,torch.Size([1024])
+91,bert.encoder.layer.5.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+92,bert.encoder.layer.5.attention.output.dense.bias,torch.float16,torch.Size([1024])
+93,bert.encoder.layer.5.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+94,bert.encoder.layer.5.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+95,bert.encoder.layer.5.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+96,bert.encoder.layer.5.intermediate.dense.bias,torch.float16,torch.Size([4096])
+97,bert.encoder.layer.5.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+98,bert.encoder.layer.5.output.dense.bias,torch.float16,torch.Size([1024])
+99,bert.encoder.layer.5.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+100,bert.encoder.layer.5.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+101,bert.encoder.layer.6.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+102,bert.encoder.layer.6.attention.self.query.bias,torch.float16,torch.Size([1024])
+103,bert.encoder.layer.6.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+104,bert.encoder.layer.6.attention.self.key.bias,torch.float16,torch.Size([1024])
+105,bert.encoder.layer.6.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+106,bert.encoder.layer.6.attention.self.value.bias,torch.float16,torch.Size([1024])
+107,bert.encoder.layer.6.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+108,bert.encoder.layer.6.attention.output.dense.bias,torch.float16,torch.Size([1024])
+109,bert.encoder.layer.6.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+110,bert.encoder.layer.6.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+111,bert.encoder.layer.6.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+112,bert.encoder.layer.6.intermediate.dense.bias,torch.float16,torch.Size([4096])
+113,bert.encoder.layer.6.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+114,bert.encoder.layer.6.output.dense.bias,torch.float16,torch.Size([1024])
+115,bert.encoder.layer.6.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+116,bert.encoder.layer.6.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+117,bert.encoder.layer.7.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+118,bert.encoder.layer.7.attention.self.query.bias,torch.float16,torch.Size([1024])
+119,bert.encoder.layer.7.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+120,bert.encoder.layer.7.attention.self.key.bias,torch.float16,torch.Size([1024])
+121,bert.encoder.layer.7.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+122,bert.encoder.layer.7.attention.self.value.bias,torch.float16,torch.Size([1024])
+123,bert.encoder.layer.7.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+124,bert.encoder.layer.7.attention.output.dense.bias,torch.float16,torch.Size([1024])
+125,bert.encoder.layer.7.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+126,bert.encoder.layer.7.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+127,bert.encoder.layer.7.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+128,bert.encoder.layer.7.intermediate.dense.bias,torch.float16,torch.Size([4096])
+129,bert.encoder.layer.7.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+130,bert.encoder.layer.7.output.dense.bias,torch.float16,torch.Size([1024])
+131,bert.encoder.layer.7.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+132,bert.encoder.layer.7.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+133,bert.encoder.layer.8.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+134,bert.encoder.layer.8.attention.self.query.bias,torch.float16,torch.Size([1024])
+135,bert.encoder.layer.8.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+136,bert.encoder.layer.8.attention.self.key.bias,torch.float16,torch.Size([1024])
+137,bert.encoder.layer.8.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+138,bert.encoder.layer.8.attention.self.value.bias,torch.float16,torch.Size([1024])
+139,bert.encoder.layer.8.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+140,bert.encoder.layer.8.attention.output.dense.bias,torch.float16,torch.Size([1024])
+141,bert.encoder.layer.8.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+142,bert.encoder.layer.8.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+143,bert.encoder.layer.8.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+144,bert.encoder.layer.8.intermediate.dense.bias,torch.float16,torch.Size([4096])
+145,bert.encoder.layer.8.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+146,bert.encoder.layer.8.output.dense.bias,torch.float16,torch.Size([1024])
+147,bert.encoder.layer.8.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+148,bert.encoder.layer.8.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+149,bert.encoder.layer.9.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+150,bert.encoder.layer.9.attention.self.query.bias,torch.float16,torch.Size([1024])
+151,bert.encoder.layer.9.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+152,bert.encoder.layer.9.attention.self.key.bias,torch.float16,torch.Size([1024])
+153,bert.encoder.layer.9.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+154,bert.encoder.layer.9.attention.self.value.bias,torch.float16,torch.Size([1024])
+155,bert.encoder.layer.9.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+156,bert.encoder.layer.9.attention.output.dense.bias,torch.float16,torch.Size([1024])
+157,bert.encoder.layer.9.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+158,bert.encoder.layer.9.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+159,bert.encoder.layer.9.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+160,bert.encoder.layer.9.intermediate.dense.bias,torch.float16,torch.Size([4096])
+161,bert.encoder.layer.9.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+162,bert.encoder.layer.9.output.dense.bias,torch.float16,torch.Size([1024])
+163,bert.encoder.layer.9.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+164,bert.encoder.layer.9.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+165,bert.encoder.layer.10.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+166,bert.encoder.layer.10.attention.self.query.bias,torch.float16,torch.Size([1024])
+167,bert.encoder.layer.10.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+168,bert.encoder.layer.10.attention.self.key.bias,torch.float16,torch.Size([1024])
+169,bert.encoder.layer.10.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+170,bert.encoder.layer.10.attention.self.value.bias,torch.float16,torch.Size([1024])
+171,bert.encoder.layer.10.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+172,bert.encoder.layer.10.attention.output.dense.bias,torch.float16,torch.Size([1024])
+173,bert.encoder.layer.10.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+174,bert.encoder.layer.10.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+175,bert.encoder.layer.10.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+176,bert.encoder.layer.10.intermediate.dense.bias,torch.float16,torch.Size([4096])
+177,bert.encoder.layer.10.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+178,bert.encoder.layer.10.output.dense.bias,torch.float16,torch.Size([1024])
+179,bert.encoder.layer.10.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+180,bert.encoder.layer.10.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+181,bert.encoder.layer.11.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+182,bert.encoder.layer.11.attention.self.query.bias,torch.float16,torch.Size([1024])
+183,bert.encoder.layer.11.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+184,bert.encoder.layer.11.attention.self.key.bias,torch.float16,torch.Size([1024])
+185,bert.encoder.layer.11.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+186,bert.encoder.layer.11.attention.self.value.bias,torch.float16,torch.Size([1024])
+187,bert.encoder.layer.11.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+188,bert.encoder.layer.11.attention.output.dense.bias,torch.float16,torch.Size([1024])
+189,bert.encoder.layer.11.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+190,bert.encoder.layer.11.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+191,bert.encoder.layer.11.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+192,bert.encoder.layer.11.intermediate.dense.bias,torch.float16,torch.Size([4096])
+193,bert.encoder.layer.11.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+194,bert.encoder.layer.11.output.dense.bias,torch.float16,torch.Size([1024])
+195,bert.encoder.layer.11.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+196,bert.encoder.layer.11.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+197,bert.encoder.layer.12.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+198,bert.encoder.layer.12.attention.self.query.bias,torch.float16,torch.Size([1024])
+199,bert.encoder.layer.12.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+200,bert.encoder.layer.12.attention.self.key.bias,torch.float16,torch.Size([1024])
+201,bert.encoder.layer.12.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+202,bert.encoder.layer.12.attention.self.value.bias,torch.float16,torch.Size([1024])
+203,bert.encoder.layer.12.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+204,bert.encoder.layer.12.attention.output.dense.bias,torch.float16,torch.Size([1024])
+205,bert.encoder.layer.12.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+206,bert.encoder.layer.12.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+207,bert.encoder.layer.12.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+208,bert.encoder.layer.12.intermediate.dense.bias,torch.float16,torch.Size([4096])
+209,bert.encoder.layer.12.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+210,bert.encoder.layer.12.output.dense.bias,torch.float16,torch.Size([1024])
+211,bert.encoder.layer.12.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+212,bert.encoder.layer.12.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+213,bert.encoder.layer.13.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+214,bert.encoder.layer.13.attention.self.query.bias,torch.float16,torch.Size([1024])
+215,bert.encoder.layer.13.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+216,bert.encoder.layer.13.attention.self.key.bias,torch.float16,torch.Size([1024])
+217,bert.encoder.layer.13.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+218,bert.encoder.layer.13.attention.self.value.bias,torch.float16,torch.Size([1024])
+219,bert.encoder.layer.13.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+220,bert.encoder.layer.13.attention.output.dense.bias,torch.float16,torch.Size([1024])
+221,bert.encoder.layer.13.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+222,bert.encoder.layer.13.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+223,bert.encoder.layer.13.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+224,bert.encoder.layer.13.intermediate.dense.bias,torch.float16,torch.Size([4096])
+225,bert.encoder.layer.13.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+226,bert.encoder.layer.13.output.dense.bias,torch.float16,torch.Size([1024])
+227,bert.encoder.layer.13.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+228,bert.encoder.layer.13.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+229,bert.encoder.layer.14.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+230,bert.encoder.layer.14.attention.self.query.bias,torch.float16,torch.Size([1024])
+231,bert.encoder.layer.14.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+232,bert.encoder.layer.14.attention.self.key.bias,torch.float16,torch.Size([1024])
+233,bert.encoder.layer.14.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+234,bert.encoder.layer.14.attention.self.value.bias,torch.float16,torch.Size([1024])
+235,bert.encoder.layer.14.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+236,bert.encoder.layer.14.attention.output.dense.bias,torch.float16,torch.Size([1024])
+237,bert.encoder.layer.14.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+238,bert.encoder.layer.14.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+239,bert.encoder.layer.14.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+240,bert.encoder.layer.14.intermediate.dense.bias,torch.float16,torch.Size([4096])
+241,bert.encoder.layer.14.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+242,bert.encoder.layer.14.output.dense.bias,torch.float16,torch.Size([1024])
+243,bert.encoder.layer.14.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+244,bert.encoder.layer.14.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+245,bert.encoder.layer.15.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+246,bert.encoder.layer.15.attention.self.query.bias,torch.float16,torch.Size([1024])
+247,bert.encoder.layer.15.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+248,bert.encoder.layer.15.attention.self.key.bias,torch.float16,torch.Size([1024])
+249,bert.encoder.layer.15.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+250,bert.encoder.layer.15.attention.self.value.bias,torch.float16,torch.Size([1024])
+251,bert.encoder.layer.15.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+252,bert.encoder.layer.15.attention.output.dense.bias,torch.float16,torch.Size([1024])
+253,bert.encoder.layer.15.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+254,bert.encoder.layer.15.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+255,bert.encoder.layer.15.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+256,bert.encoder.layer.15.intermediate.dense.bias,torch.float16,torch.Size([4096])
+257,bert.encoder.layer.15.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+258,bert.encoder.layer.15.output.dense.bias,torch.float16,torch.Size([1024])
+259,bert.encoder.layer.15.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+260,bert.encoder.layer.15.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+261,bert.encoder.layer.16.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+262,bert.encoder.layer.16.attention.self.query.bias,torch.float16,torch.Size([1024])
+263,bert.encoder.layer.16.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+264,bert.encoder.layer.16.attention.self.key.bias,torch.float16,torch.Size([1024])
+265,bert.encoder.layer.16.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+266,bert.encoder.layer.16.attention.self.value.bias,torch.float16,torch.Size([1024])
+267,bert.encoder.layer.16.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+268,bert.encoder.layer.16.attention.output.dense.bias,torch.float16,torch.Size([1024])
+269,bert.encoder.layer.16.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+270,bert.encoder.layer.16.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+271,bert.encoder.layer.16.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+272,bert.encoder.layer.16.intermediate.dense.bias,torch.float16,torch.Size([4096])
+273,bert.encoder.layer.16.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+274,bert.encoder.layer.16.output.dense.bias,torch.float16,torch.Size([1024])
+275,bert.encoder.layer.16.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+276,bert.encoder.layer.16.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+277,bert.encoder.layer.17.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+278,bert.encoder.layer.17.attention.self.query.bias,torch.float16,torch.Size([1024])
+279,bert.encoder.layer.17.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+280,bert.encoder.layer.17.attention.self.key.bias,torch.float16,torch.Size([1024])
+281,bert.encoder.layer.17.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+282,bert.encoder.layer.17.attention.self.value.bias,torch.float16,torch.Size([1024])
+283,bert.encoder.layer.17.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+284,bert.encoder.layer.17.attention.output.dense.bias,torch.float16,torch.Size([1024])
+285,bert.encoder.layer.17.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+286,bert.encoder.layer.17.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+287,bert.encoder.layer.17.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+288,bert.encoder.layer.17.intermediate.dense.bias,torch.float16,torch.Size([4096])
+289,bert.encoder.layer.17.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+290,bert.encoder.layer.17.output.dense.bias,torch.float16,torch.Size([1024])
+291,bert.encoder.layer.17.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+292,bert.encoder.layer.17.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+293,bert.encoder.layer.18.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+294,bert.encoder.layer.18.attention.self.query.bias,torch.float16,torch.Size([1024])
+295,bert.encoder.layer.18.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+296,bert.encoder.layer.18.attention.self.key.bias,torch.float16,torch.Size([1024])
+297,bert.encoder.layer.18.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+298,bert.encoder.layer.18.attention.self.value.bias,torch.float16,torch.Size([1024])
+299,bert.encoder.layer.18.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+300,bert.encoder.layer.18.attention.output.dense.bias,torch.float16,torch.Size([1024])
+301,bert.encoder.layer.18.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+302,bert.encoder.layer.18.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+303,bert.encoder.layer.18.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+304,bert.encoder.layer.18.intermediate.dense.bias,torch.float16,torch.Size([4096])
+305,bert.encoder.layer.18.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+306,bert.encoder.layer.18.output.dense.bias,torch.float16,torch.Size([1024])
+307,bert.encoder.layer.18.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+308,bert.encoder.layer.18.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+309,bert.encoder.layer.19.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+310,bert.encoder.layer.19.attention.self.query.bias,torch.float16,torch.Size([1024])
+311,bert.encoder.layer.19.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+312,bert.encoder.layer.19.attention.self.key.bias,torch.float16,torch.Size([1024])
+313,bert.encoder.layer.19.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+314,bert.encoder.layer.19.attention.self.value.bias,torch.float16,torch.Size([1024])
+315,bert.encoder.layer.19.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+316,bert.encoder.layer.19.attention.output.dense.bias,torch.float16,torch.Size([1024])
+317,bert.encoder.layer.19.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+318,bert.encoder.layer.19.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+319,bert.encoder.layer.19.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+320,bert.encoder.layer.19.intermediate.dense.bias,torch.float16,torch.Size([4096])
+321,bert.encoder.layer.19.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+322,bert.encoder.layer.19.output.dense.bias,torch.float16,torch.Size([1024])
+323,bert.encoder.layer.19.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+324,bert.encoder.layer.19.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+325,bert.encoder.layer.20.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+326,bert.encoder.layer.20.attention.self.query.bias,torch.float16,torch.Size([1024])
+327,bert.encoder.layer.20.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+328,bert.encoder.layer.20.attention.self.key.bias,torch.float16,torch.Size([1024])
+329,bert.encoder.layer.20.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+330,bert.encoder.layer.20.attention.self.value.bias,torch.float16,torch.Size([1024])
+331,bert.encoder.layer.20.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+332,bert.encoder.layer.20.attention.output.dense.bias,torch.float16,torch.Size([1024])
+333,bert.encoder.layer.20.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+334,bert.encoder.layer.20.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+335,bert.encoder.layer.20.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+336,bert.encoder.layer.20.intermediate.dense.bias,torch.float16,torch.Size([4096])
+337,bert.encoder.layer.20.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+338,bert.encoder.layer.20.output.dense.bias,torch.float16,torch.Size([1024])
+339,bert.encoder.layer.20.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+340,bert.encoder.layer.20.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+341,bert.encoder.layer.21.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+342,bert.encoder.layer.21.attention.self.query.bias,torch.float16,torch.Size([1024])
+343,bert.encoder.layer.21.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+344,bert.encoder.layer.21.attention.self.key.bias,torch.float16,torch.Size([1024])
+345,bert.encoder.layer.21.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+346,bert.encoder.layer.21.attention.self.value.bias,torch.float16,torch.Size([1024])
+347,bert.encoder.layer.21.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+348,bert.encoder.layer.21.attention.output.dense.bias,torch.float16,torch.Size([1024])
+349,bert.encoder.layer.21.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+350,bert.encoder.layer.21.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+351,bert.encoder.layer.21.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+352,bert.encoder.layer.21.intermediate.dense.bias,torch.float16,torch.Size([4096])
+353,bert.encoder.layer.21.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+354,bert.encoder.layer.21.output.dense.bias,torch.float16,torch.Size([1024])
+355,bert.encoder.layer.21.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+356,bert.encoder.layer.21.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+357,bert.encoder.layer.22.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+358,bert.encoder.layer.22.attention.self.query.bias,torch.float16,torch.Size([1024])
+359,bert.encoder.layer.22.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+360,bert.encoder.layer.22.attention.self.key.bias,torch.float16,torch.Size([1024])
+361,bert.encoder.layer.22.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+362,bert.encoder.layer.22.attention.self.value.bias,torch.float16,torch.Size([1024])
+363,bert.encoder.layer.22.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+364,bert.encoder.layer.22.attention.output.dense.bias,torch.float16,torch.Size([1024])
+365,bert.encoder.layer.22.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+366,bert.encoder.layer.22.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+367,bert.encoder.layer.22.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+368,bert.encoder.layer.22.intermediate.dense.bias,torch.float16,torch.Size([4096])
+369,bert.encoder.layer.22.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+370,bert.encoder.layer.22.output.dense.bias,torch.float16,torch.Size([1024])
+371,bert.encoder.layer.22.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+372,bert.encoder.layer.22.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+373,bert.encoder.layer.23.attention.self.query.weight,torch.float16,"torch.Size([1024, 1024])"
+374,bert.encoder.layer.23.attention.self.query.bias,torch.float16,torch.Size([1024])
+375,bert.encoder.layer.23.attention.self.key.weight,torch.float16,"torch.Size([1024, 1024])"
+376,bert.encoder.layer.23.attention.self.key.bias,torch.float16,torch.Size([1024])
+377,bert.encoder.layer.23.attention.self.value.weight,torch.float16,"torch.Size([1024, 1024])"
+378,bert.encoder.layer.23.attention.self.value.bias,torch.float16,torch.Size([1024])
+379,bert.encoder.layer.23.attention.output.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+380,bert.encoder.layer.23.attention.output.dense.bias,torch.float16,torch.Size([1024])
+381,bert.encoder.layer.23.attention.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+382,bert.encoder.layer.23.attention.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+383,bert.encoder.layer.23.intermediate.dense.weight,torch.float16,"torch.Size([4096, 1024])"
+384,bert.encoder.layer.23.intermediate.dense.bias,torch.float16,torch.Size([4096])
+385,bert.encoder.layer.23.output.dense.weight,torch.float16,"torch.Size([1024, 4096])"
+386,bert.encoder.layer.23.output.dense.bias,torch.float16,torch.Size([1024])
+387,bert.encoder.layer.23.output.LayerNorm.weight,torch.float16,torch.Size([1024])
+388,bert.encoder.layer.23.output.LayerNorm.bias,torch.float16,torch.Size([1024])
+389,bert.pooler.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+390,bert.pooler.dense.bias,torch.float16,torch.Size([1024])
+391,cls.predictions.bias,torch.float16,torch.Size([30522])
+392,cls.predictions.transform.dense.weight,torch.float16,"torch.Size([1024, 1024])"
+393,cls.predictions.transform.dense.bias,torch.float16,torch.Size([1024])
+394,cls.predictions.transform.LayerNorm.weight,torch.float16,torch.Size([1024])
+395,cls.predictions.transform.LayerNorm.bias,torch.float16,torch.Size([1024])
+396,cls.seq_relationship.weight,torch.float16,"torch.Size([2, 1024])"
+397,cls.seq_relationship.bias,torch.float16,torch.Size([2])

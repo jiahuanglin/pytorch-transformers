@@ -10,6 +10,7 @@ python finetune_on_pregenerated.py \
     --bert_model bert-large-uncased \
     --do_lower_case \
     --output_dir finetuned_lm/ \
-    --epochs 3 \
+    --epochs 1 \
     --fp16 \
-    --train_batch_size 14
+    --batch_size 13 \
+    --benchmark 

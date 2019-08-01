@@ -7,7 +7,8 @@ import logging
 import json
 import random
 import numpy as np
-from collections import namedtuple
+import pandas as pd
+from collections import namedtuple, defaultdict
 from tempfile import TemporaryDirectory
 
 from torch.utils.data import DataLoader, Dataset, RandomSampler
@@ -17,6 +18,8 @@ from tqdm import tqdm
 from pytorch_transformers.modeling_bert import BertForPreTraining
 from pytorch_transformers.tokenization_bert import BertTokenizer
 from pytorch_transformers.optimization import AdamW, WarmupLinearSchedule
+
+from utils import Timers
 
 InputFeatures = namedtuple("InputFeatures", "input_ids input_mask segment_ids lm_label_ids is_next")
 
@@ -159,10 +162,16 @@ def get_args():
     parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train for")
     parser.add_argument("--no_cuda", action='store_true',
                         help="Whether not to use CUDA when available")
+
+    # training config
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
                         help="Number of updates steps to accumulate before performing a backward/update pass.")
-    parser.add_argument("--train_batch_size", default=12, type=int,
+    parser.add_argument("--batch_size", default=12, type=int,
                         help="Total batch size for training.")
+    parser.add_argument("--seq_length", default=256, type=int,
+                        help="Seq length of each sample.")
+    parser.add_argument('--train-iters', type=int, default=2000,
+                       help='number of iterations per epoch')
 
     # distributed training config
     parser.add_argument("--local_rank", type=int, default=-1,
@@ -207,18 +216,20 @@ def get_args():
                         help="""Start iteration of nvidia profiler""")
     parser.add_argument('--benchmark-stop', type=int, default=2000,
                         help="""Stop iteration of nvidia profiler""")
-    parser.add_argument('--benchmark-partition', type=str, default="p100",
+    parser.add_argument('--benchmark-partition', type=str, default="t4",
                         help="""Partition of gpus""")
+    parser.add_argument('--log-interval', type=int, default=100,
+                       help='report interval')
 
     args = parser.parse_args()
 
     assert args.pregenerated_data.is_dir(), \
         "--pregenerated_data should point to the folder of files made by pregenerate_training_data.py!"
 
-    args.rank = torch.distributed.get_rank()
-    args.world_size = torch.distributed.get_world_size()
+    args.rank = int(os.getenv('RANK', '0'))
+    args.world_size = int(os.getenv("WORLD_SIZE", '1'))
 
-    retrun args
+    return args
 
 
 
@@ -262,7 +273,7 @@ def main():
         raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
                             args.gradient_accumulation_steps))
 
-    args.train_batch_size = args.train_batch_size // args.gradient_accumulation_steps
+    args.batch_size = args.batch_size // args.gradient_accumulation_steps
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -277,9 +288,9 @@ def main():
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
 
     num_train_optimization_steps = int(
-        total_train_examples / args.train_batch_size / args.gradient_accumulation_steps)
+        total_train_examples / args.batch_size / args.gradient_accumulation_steps)
     if args.local_rank != -1:
-        num_train_optimization_steps = num_train_optimization_steps // torch.distributed.get_world_size()
+        num_train_optimization_steps = num_train_optimization_steps // args.world_size
 
     # Prepare model
     model = BertForPreTraining.from_pretrained(args.bert_model)
@@ -329,8 +340,15 @@ def main():
     global_step = 0
     logging.info("***** Running training *****")
     logging.info(f"  Num examples = {total_train_examples}")
-    logging.info("  Batch size = %d", args.train_batch_size)
+    logging.info("  Batch size = %d", args.batch_size)
     logging.info("  Num steps = %d", num_train_optimization_steps)
+
+
+    iteration = 0
+    timers = Timers()
+    benchmark_stats = defaultdict(lambda: [])
+    grad_stats = defaultdict(lambda: [])
+
     model.train()
     for epoch in range(args.epochs):
         
@@ -345,40 +363,110 @@ def main():
                 train_sampler = RandomSampler(epoch_dataset)
             else:
                 train_sampler = DistributedSampler(epoch_dataset)
-            train_dataloader = DataLoader(epoch_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
+            train_dataloader = DataLoader(epoch_dataset, sampler=train_sampler, batch_size=args.batch_size)
+            data_iterator = iter(train_dataloader)
             tr_loss = 0
             nb_tr_examples, nb_tr_steps = 0, 0
-            with tqdm(total=len(train_dataloader), desc=f"Epoch {epoch}") as pbar:
-                for step, batch in enumerate(train_dataloader):
-                    batch = tuple(t.to(device) for t in batch)
-                    input_ids, input_mask, segment_ids, lm_label_ids, is_next = batch
-                    outputs = model(input_ids, segment_ids, input_mask, lm_label_ids, is_next)
-                    loss = outputs[0]
-                    if n_gpu > 1:
-                        loss = loss.mean() # mean() to average on multi-gpu.
-                    if args.gradient_accumulation_steps > 1:
-                        loss = loss / args.gradient_accumulation_steps
-                    if args.fp16:
-                        optimizer.backward(loss)
-                    else:
-                        loss.backward()
-                    tr_loss += loss.item()
-                    nb_tr_examples += input_ids.size(0)
-                    nb_tr_steps += 1
-                    pbar.update(1)
-                    mean_loss = tr_loss * args.gradient_accumulation_steps / nb_tr_steps
-                    pbar.set_postfix_str(f"Loss: {mean_loss:.5f}")
-                    if (step + 1) % args.gradient_accumulation_steps == 0:
-                        # scheduler.step()  # Update learning rate schedule
-                        optimizer.step()
-                        optimizer.zero_grad()
-                        global_step += 1
+            timers('interval time').start()
+            while iteration < args.train_iters:
+                if args.nvprof:
+                    if iteration == args.profile_start:
+                        profile_cuda.profile_start()
+                        print("CUDA profiling starts!")
+                    if iteration == args.profile_stop:
+                        profile_cuda.profile_stop()
+                        print("CUDA profiling stops!")
+
+                iteration += 1
+                batch = next(data_iterator)
+                batch = tuple(t.to(device) for t in batch)
+                input_ids, input_mask, segment_ids, lm_label_ids, is_next = batch
+                outputs = model(input_ids, segment_ids, input_mask, lm_label_ids, is_next)
+                loss = outputs[0]
+                if n_gpu > 1:
+                    loss = loss.mean() # mean() to average on multi-gpu.
+                if args.gradient_accumulation_steps > 1:
+                    loss = loss / args.gradient_accumulation_steps
+                if args.fp16:
+                    optimizer.backward(loss)
+                else:
+                    loss.backward()
+
+                # if len(grad_stats) == 0:
+                #     for name, p in model.named_parameters():
+                #         if p.requires_grad:
+                #             grad_stats['param_name'].append(name)
+                #             grad_stats['dtype'].append(p.grad.dtype)
+                #             grad_stats['size'].append(p.grad.size())
+                #     df = pd.DataFrame.from_dict(grad_stats)
+                #     df.to_csv("gradient_size_profile.csv")
+                #     print(model.state_dict)
+                #     os._exit(0)
+
+                tr_loss += loss.item()
+                nb_tr_examples += input_ids.size(0)
+                nb_tr_steps += 1
+                mean_loss = tr_loss * args.gradient_accumulation_steps / nb_tr_steps
+
+                if iteration % args.log_interval == 0:
+                    elapsed_time = timers('interval time').elapsed()
+                    log_string = ' epoch{:2d} |'.format(epoch)
+                    log_string += ' iteration {:8d}/{:8d} |'.format(iteration, args.train_iters)
+                    log_string += ' elapsed time per iteration (ms): {:.1f} |'.format(elapsed_time * 1000.0 / args.log_interval)
+                    log_string += ' mean loss {:.3E} |'.format(mean_loss)
+
+                    if args.benchmark and args.rank == 0:
+                        if args.benchmark_start < iteration <= args.benchmark_stop:
+                            benchmark_stats['iteration'].append(iteration)
+                            benchmark_stats['seq_length'].append(args.seq_length)
+                            benchmark_stats['batch_size'].append(args.batch_size * args.world_size)
+                            benchmark_stats['num_tokens'].append(args.seq_length * args.batch_size * args.world_size)
+                            benchmark_stats['elapsed_time'].append(elapsed_time)
+                            benchmark_stats['log_interval'].append(args.log_interval)
+                
+                    print(log_string, flush=True)
+
+                if iteration % args.gradient_accumulation_steps == 0:
+                    # scheduler.step()  # Update learning rate schedule (commented as lr_scheduler not compatible with FP16_Optimizer)
+                    optimizer.step()
+                    optimizer.zero_grad()
+                    global_step += 1
+            
+            # delete break if not doing benchmarking
+            break
 
     # Save a trained model
-    if  n_gpu > 1 and torch.distributed.get_rank() == 0  or n_gpu <=1 :
+    if  n_gpu > 1 and args.rank == 0  or n_gpu <=1 :
         logging.info("** ** * Saving fine-tuned model ** ** * ")
         model.save_pretrained(args.output_dir)
         tokenizer.save_pretrained(args.output_dir)
+
+    if args.benchmark and args.rank == 0:
+        benchmark_csv = {
+            k: [np.mean(l)] for k,l in benchmark_stats.items()
+        }
+        benchmark_csv['token_throughput'] = np.array(benchmark_csv['num_tokens']) * np.array(benchmark_csv['log_interval'])\
+                                     / np.array(benchmark_csv['elapsed_time'])
+
+        save_dir = os.path.join(
+            args.benchmark_dir, 
+            "{gpus}_gpus_{partition}_trials".format(
+                gpus=args.world_size,
+                partition=args.benchmark_partition
+            )
+        )
+        if not os.path.exists(save_dir):
+            os.mkdir(save_dir)
+        df = pd.DataFrame.from_dict(benchmark_csv)
+        df.to_csv(os.path.join(
+            save_dir,
+            "huggingface_benchmark_{partition}_batch_size_{batch_size}_seq_len_{seq_len}.csv".format(
+                partition=args.benchmark_partition,
+                batch_size=args.batch_size,
+                seq_len=args.seq_length
+            )
+        ))
+
 
 
 if __name__ == '__main__':
