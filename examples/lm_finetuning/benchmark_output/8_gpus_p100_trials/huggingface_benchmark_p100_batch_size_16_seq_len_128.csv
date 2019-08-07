@@ -1,0 +1,2 @@
+,weight_update_time,iteration,seq_length,batch_size,num_tokens,elapsed_time,log_interval,token_throughput,precision
+0,1.9438743591308594,1550.0,128.0,128.0,16384.0,131.15832004547119,100.0,12491.773296821615,fp16

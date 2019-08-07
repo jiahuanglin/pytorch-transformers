@@ -19,6 +19,10 @@ case $i in
     BATCH_SIZE="${i#*=}"
     shift # past argument=value
     ;;
+    -f=*|--precision=*)
+    PRECISION="${i#*=}"
+    shift # past argument=value
+    ;;
     -g=*|--ngpu_per_node=*)
     NUM_GPU_PER_NODE="${i#*=}"
     shift # past argument=value
@@ -51,6 +55,7 @@ done
 echo "PARTITION         = ${PARTITION}"
 echo "SEQ_LEN           = ${SEQ_LEN}"
 echo "BATCH_SIZE        = ${BATCH_SIZE}"
+echo "PRECISION         = ${PRECISION}"
 echo "NNODES            = ${NNODES}"
 echo "NODE_RANK         = ${NODE_RANK}"
 echo "NUM_GPU_PER_NODE  = ${NUM_GPU_PER_NODE}"
@@ -62,6 +67,7 @@ echo "scheduled to node: $SLURMD_NODENAME"
 
 MASTER_FILE="${MASTER_DIR}/${MASTER_OUTPUT}"
 
+# subnet used for Vaughn server
 SUBNET=172.17.8.
 
 if [ $NODE_RANK = 0 ] ; then
@@ -90,13 +96,36 @@ else
     echo "MASTER PROT = ${MASTER_PORT}"
 fi
 
+NVPROF_OPTIONS="--profile-child-processes --profile-from-start off --export-profile huggingface_t4_fused_gelu_profile.nvprof --print-summary"
 DISTRIBUTED_ARGS="--nproc_per_node $NUM_GPU_PER_NODE --nnodes $NNODES --node_rank $NODE_RANK --master_addr $MASTER_ADDR --master_port $MASTER_PORT"
-DATA=/scratch/hdd001/home/jacoblin/NLP-corpus/wiki_corpus/huggingface/pregen_data/
+DATA=/scratch/hdd001/home/jacoblin/NLP-corpus/wiki_corpus/huggingface/pregen_data_128/
+NCCL_DEBUG=TRACE
 
-NCCL_DEBUG=TRACE python -m torch.distributed.launch $DISTRIBUTED_ARGS \
-python finetune_on_pregenerated.py \
-    --pregenerated_data $DATA \
-    --bert_model bert-base-uncased \
-    --do_lower_case \
-    --output_dir finetuned_lm/ \
-    --epochs 3
+if [ "$PRECISION" = "fp16" ] ; then
+    python -m torch.distributed.launch $DISTRIBUTED_ARGS \
+        finetune_on_pregenerated.py \
+            --pregenerated_data $DATA \
+            --batch_size $BATCH_SIZE \
+            --seq_length $SEQ_LEN \
+            --bert_model bert-large-uncased \
+            --do_lower_case \
+            --output_dir finetuned_lm/ \
+            --gradient_accumulation_steps 1 \
+            --fp16 \
+            --epochs 1 \
+            --benchmark_partition $PARTITION \
+            --benchmark
+else
+    python -m torch.distributed.launch $DISTRIBUTED_ARGS \
+        finetune_on_pregenerated.py \
+            --pregenerated_data $DATA \
+            --batch_size $BATCH_SIZE \
+            --seq_length $SEQ_LEN \
+            --bert_model bert-large-uncased \
+            --do_lower_case \
+            --output_dir finetuned_lm/ \
+            --gradient_accumulation_steps 1 \
+            --epochs 1 \
+            --benchmark_partition $PARTITION \
+            --benchmark
+fi

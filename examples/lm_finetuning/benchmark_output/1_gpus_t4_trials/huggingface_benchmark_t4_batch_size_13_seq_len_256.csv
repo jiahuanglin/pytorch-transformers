@@ -1,2 +1,0 @@
-,iteration,seq_length,batch_size,num_tokens,elapsed_time,log_interval,token_throughput
-0,1550.0,256.0,13.0,3328.0,74.01447234153747,100.0,4496.417923028685

@@ -1,6 +1,7 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import os
+import time
 import glob
 import torch
 import logging
@@ -11,6 +12,7 @@ import pandas as pd
 from collections import namedtuple, defaultdict
 from tempfile import TemporaryDirectory
 
+import numba.cuda as profile_cuda
 from torch.utils.data import DataLoader, Dataset, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
 from tqdm import tqdm
@@ -153,22 +155,26 @@ def get_args():
     parser = ArgumentParser()
     parser.add_argument('--pregenerated_data', type=Path, required=True)
     parser.add_argument('--output_dir', type=Path, required=True)
-    parser.add_argument("--bert_model", type=str, required=True, help="Bert pre-trained model selected in the list: bert-base-uncased, "
+    parser.add_argument("--bert_model", type=str, required=True, 
+                        help="Bert pre-trained model selected in the list: bert-base-uncased, "
                              "bert-large-uncased, bert-base-cased, bert-base-multilingual, bert-base-chinese.")
     parser.add_argument("--do_lower_case", action="store_true")
     parser.add_argument("--reduce_memory", action="store_true",
                         help="Store training data as on-disc memmaps to massively reduce memory usage")
-
-    parser.add_argument("--epochs", type=int, default=3, help="Number of epochs to train for")
+    parser.add_argument("--epochs", type=int, 
+                        default=3, help="Number of epochs to train for")
     parser.add_argument("--no_cuda", action='store_true',
                         help="Whether not to use CUDA when available")
+    parser.add_argument("--num_workers", type=int, 
+                        default=0, help="Number of workers to load data")
+    
 
     # training config
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1,
                         help="Number of updates steps to accumulate before performing a backward/update pass.")
     parser.add_argument("--batch_size", default=12, type=int,
                         help="Total batch size for training.")
-    parser.add_argument("--seq_length", default=256, type=int,
+    parser.add_argument("--seq_length", default=128, type=int,
                         help="Seq length of each sample.")
     parser.add_argument('--train-iters', type=int, default=2000,
                        help='number of iterations per epoch')
@@ -200,25 +206,25 @@ def get_args():
     # nvprof args
     parser.add_argument('--nvprof', action='store_true',
                         help='profile this program')
-    parser.add_argument('--profile-start', type=int, default=200,
+    parser.add_argument('--profile_start', type=int, default=200,
                         help="""Start iteration of nvidia profiler""")
-    parser.add_argument('--profile-stop', type=int, default=201,
+    parser.add_argument('--profile_stop', type=int, default=201,
                         help="""Stop iteration of nvidia profiler""")
-    parser.add_argument('--warmup-iter', type=int, default=200,
+    parser.add_argument('--warmup_iter', type=int, default=200,
                         help="""Start iteration of nvidia profiler""")
 
     # benchmarking args
     parser.add_argument('--benchmark', action='store_true',
                         help='benchmark this program')
-    parser.add_argument('--benchmark-dir', type=str, default="benchmark_output",
+    parser.add_argument('--benchmark_dir', type=str, default="benchmark_output",
                         help="""Dir to save benchmark output stats""")
-    parser.add_argument('--benchmark-start', type=int, default=1000,
+    parser.add_argument('--benchmark_start', type=int, default=1000,
                         help="""Start iteration of nvidia profiler""")
-    parser.add_argument('--benchmark-stop', type=int, default=2000,
+    parser.add_argument('--benchmark_stop', type=int, default=2000,
                         help="""Stop iteration of nvidia profiler""")
-    parser.add_argument('--benchmark-partition', type=str, default="t4",
+    parser.add_argument('--benchmark_partition', type=str, default="t4",
                         help="""Partition of gpus""")
-    parser.add_argument('--log-interval', type=int, default=100,
+    parser.add_argument('--log_interval', type=int, default=100,
                        help='report interval')
 
     args = parser.parse_args()
@@ -264,8 +270,17 @@ def main():
         torch.cuda.set_device(args.local_rank)
         device = torch.device("cuda", args.local_rank)
         n_gpu = 1
+        init_method = 'tcp://'
+        master_ip = os.getenv('MASTER_ADDR', 'localhost')
+        master_port = os.getenv('MASTER_PORT', '6000')
+        init_method += master_ip + ':' + master_port
+        torch.distributed.init_process_group(
+            backend='nccl',
+            world_size=args.world_size, 
+            rank=args.rank,
+            init_method=init_method)
         # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
-        torch.distributed.init_process_group(backend='nccl')
+        # torch.distributed.init_process_group(backend='nccl')
     logging.info("device: {} n_gpu: {}, distributed training: {}, 16-bits training: {}".format(
         device, n_gpu, bool(args.local_rank != -1), args.fp16))
 
@@ -274,6 +289,8 @@ def main():
                             args.gradient_accumulation_steps))
 
     args.batch_size = args.batch_size // args.gradient_accumulation_steps
+
+    print("CUDA device count: {}".format(torch.cuda.device_count()))
 
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -363,7 +380,7 @@ def main():
                 train_sampler = RandomSampler(epoch_dataset)
             else:
                 train_sampler = DistributedSampler(epoch_dataset)
-            train_dataloader = DataLoader(epoch_dataset, sampler=train_sampler, batch_size=args.batch_size)
+            train_dataloader = DataLoader(epoch_dataset, sampler=train_sampler, batch_size=args.batch_size, num_workers=args.num_workers)
             data_iterator = iter(train_dataloader)
             tr_loss = 0
             nb_tr_examples, nb_tr_steps = 0, 0
@@ -378,7 +395,10 @@ def main():
                         print("CUDA profiling stops!")
 
                 iteration += 1
+
+                # benchmark dataloading time
                 batch = next(data_iterator)
+
                 batch = tuple(t.to(device) for t in batch)
                 input_ids, input_mask, segment_ids, lm_label_ids, is_next = batch
                 outputs = model(input_ids, segment_ids, input_mask, lm_label_ids, is_next)
@@ -392,21 +412,18 @@ def main():
                 else:
                     loss.backward()
 
-                # if len(grad_stats) == 0:
-                #     for name, p in model.named_parameters():
-                #         if p.requires_grad:
-                #             grad_stats['param_name'].append(name)
-                #             grad_stats['dtype'].append(p.grad.dtype)
-                #             grad_stats['size'].append(p.grad.size())
-                #     df = pd.DataFrame.from_dict(grad_stats)
-                #     df.to_csv("gradient_size_profile.csv")
-                #     print(model.state_dict)
-                #     os._exit(0)
-
                 tr_loss += loss.item()
                 nb_tr_examples += input_ids.size(0)
                 nb_tr_steps += 1
                 mean_loss = tr_loss * args.gradient_accumulation_steps / nb_tr_steps
+
+                if iteration % args.gradient_accumulation_steps == 0:
+                    start = time.time()
+                    # scheduler.step()  # Update learning rate schedule (commented as lr_scheduler not compatible with FP16_Optimizer)
+                    optimizer.step()
+                    optimizer.zero_grad()
+                    benchmark_stats['weight_update_time'] = (time.time() - start) # unit in s
+                    global_step += 1
 
                 if iteration % args.log_interval == 0:
                     elapsed_time = timers('interval time').elapsed()
@@ -425,28 +442,24 @@ def main():
                             benchmark_stats['log_interval'].append(args.log_interval)
                 
                     print(log_string, flush=True)
-
-                if iteration % args.gradient_accumulation_steps == 0:
-                    # scheduler.step()  # Update learning rate schedule (commented as lr_scheduler not compatible with FP16_Optimizer)
-                    optimizer.step()
-                    optimizer.zero_grad()
-                    global_step += 1
             
             # delete break if not doing benchmarking
             break
 
-    # Save a trained model
-    if  n_gpu > 1 and args.rank == 0  or n_gpu <=1 :
-        logging.info("** ** * Saving fine-tuned model ** ** * ")
-        model.save_pretrained(args.output_dir)
-        tokenizer.save_pretrained(args.output_dir)
+    # Save a trained model (comment out => don't need it for benchmarking)
+    # if  n_gpu > 1 and args.rank == 0  or n_gpu <=1 :
+    #     logging.info("** ** * Saving fine-tuned model ** ** * ")
+    #     model.save_pretrained(args.output_dir)
+    #     tokenizer.save_pretrained(args.output_dir)
 
     if args.benchmark and args.rank == 0:
         benchmark_csv = {
             k: [np.mean(l)] for k,l in benchmark_stats.items()
         }
+        benchmark_csv['weight_update_time'] = args.log_interval * np.array(benchmark_csv['weight_update_time'])
         benchmark_csv['token_throughput'] = np.array(benchmark_csv['num_tokens']) * np.array(benchmark_csv['log_interval'])\
                                      / np.array(benchmark_csv['elapsed_time'])
+        benchmark_csv['precision'] = [ 'fp16' if args.fp16 else 'fp32' ]
 
         save_dir = os.path.join(
             args.benchmark_dir, 
