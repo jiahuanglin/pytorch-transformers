@@ -9,17 +9,27 @@ import json
 import random
 import numpy as np
 import pandas as pd
+from contextlib import contextmanager
 from collections import namedtuple, defaultdict
 from tempfile import TemporaryDirectory
 
 import numba.cuda as profile_cuda
+from tqdm import tqdm
+from tensorboardX import SummaryWriter
+
 from torch.utils.data import DataLoader, Dataset, RandomSampler
 from torch.utils.data.distributed import DistributedSampler
-from tqdm import tqdm
-
 from pytorch_transformers.modeling_bert import BertForPreTraining
 from pytorch_transformers.tokenization_bert import BertTokenizer
 from pytorch_transformers.optimization import AdamW, WarmupLinearSchedule
+
+try:
+    from apex.parallel import DistributedDataParallel as DDP
+    from apex.optimizers import FP16_Optimizer
+    from apex.optimizers import FusedAdam
+except ImportError:
+    raise ImportError(
+        "Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training.")
 
 from utils import Timers
 
@@ -27,6 +37,86 @@ InputFeatures = namedtuple("InputFeatures", "input_ids input_mask segment_ids lm
 
 log_format = '%(asctime)-10s: %(message)s'
 logging.basicConfig(level=logging.INFO, format=log_format)
+
+def check_files(checkpoint_path, prefix, max_files=10):
+    """
+    checkFiles
+    Check the number of checkpoints, if it exceeds max_files, delete the oldest ones,
+    return the latest checkpoint file path.
+    checkpoint_path: str, path to checkpoints
+    max_files: int, maximum number of checkpoints to retain
+    """
+    try:
+        pattern = os.path.join(checkpoint_path, prefix + "*.tar")
+        checkpoint_files = glob.glob(pattern)
+        checkpoint_files.sort(key=lambda x: os.path.getmtime(x))
+    except FileNotFoundError:
+        return None
+
+    try:
+        latest_checkpoint = checkpoint_files[-1]
+    except IndexError:
+        # No checkpoint files, list is empty!
+        latest_checkpoint = None
+
+    print("CURRENTLY %d CHECKPOINTS" % len(checkpoint_files))
+    if len(checkpoint_files) > max_files:
+        logging.info("DELETE EXCESS CHECKPOINTS")
+        for idx, checkpoint_file in enumerate(checkpoint_files[:-max_files]):
+            if checkpoint_file=='training_checkpoint_most_recent.tar':continue
+            logging.info("DELETE %s" % checkpoint_file)
+            os.remove(checkpoint_file)
+
+    return latest_checkpoint
+
+def save_checkpoint(model, optimizer, epoch, global_step, checkpoint_path, filename):
+    """
+    saveCheckpoint
+    Save the model and optimizer state in a dictionary
+    model: [class], torch model instance
+    optimizer: [class], torch optimizer instance
+    epoch: int, current epoch
+    global_step: int, current global step
+    checkpoint_path: string, path
+    filename: string, name of the checkpoint file
+    """
+
+    logging.info("** ** * Saving fine-tuned model ** ** * ")
+
+    if not os.path.exists(checkpoint_path):
+        os.makedirs(checkpoint_path, exist_ok=True)
+    torch.save({"epoch": epoch,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "global_step": global_step}, filename)
+
+    logging.info("** ** * Model saved! ** ** * ")
+
+def restore_checkpoint(model, optimizer, checkpoint_file, device):
+    """
+    Restores model and optimizer from a checkpoint file and returns checkpoint information.
+    Has side effect of loading the state_dict for model and optimizer (i.e. modifies the instances).
+    :param model: [class], torch model instance
+    :param optimizer: [class], torch optimizer instance
+    :param checkpoint_file: string, full file path
+    :param device: [class], torch device instance
+    :return: Tuple of the checkpoint values
+    """
+    assert checkpoint_file
+
+    logging.info("** ** * Restore from checkpoint: %s" % checkpoint_file)
+    checkpoint_state = torch.load(checkpoint_file, map_location=device)
+    model.load_state_dict(checkpoint_state["model_state_dict"])
+    optimizer.load_state_dict(checkpoint_state["optimizer_state_dict"])
+    last_epoch = checkpoint_state["epoch"]
+    global_step = checkpoint_state["global_step"]
+
+    logging.info("  RESTORED AT epoch:%d-%s, global_step:%d" % (last_epoch, global_step))
+    logging.info("** ** * Model restored! ** ** * ")
+
+    # model.train()  # Do this in calling code for now, maybe want model.eval() there instead
+
+    return last_epoch, global_step
 
 
 def convert_example_to_features(example, tokenizer, max_seq_length):
@@ -155,6 +245,7 @@ def get_args():
     parser = ArgumentParser()
     parser.add_argument('--pregenerated_data', type=Path, required=True)
     parser.add_argument('--output_dir', type=Path, required=True)
+    parser.add_argument('--restore_dir', type=Path, help="Restore from a checkpoint file and continue training")
     parser.add_argument("--bert_model", type=str, required=True, 
                         help="Bert pre-trained model selected in the list: bert-base-uncased, "
                              "bert-large-uncased, bert-base-cased, bert-base-multilingual, bert-base-chinese.")
@@ -176,13 +267,12 @@ def get_args():
                         help="Total batch size for training.")
     parser.add_argument("--seq_length", default=128, type=int,
                         help="Seq length of each sample.")
-    parser.add_argument('--train-iters', type=int, default=2000,
+    parser.add_argument('--train_iters', type=int, default=2000,
                        help='number of iterations per epoch')
 
     # distributed training config
     parser.add_argument("--local_rank", type=int, default=-1,
                         help="local_rank for distributed training on gpus. Passed from distributed launcher")
-
 
     # AMP config
     parser.add_argument('--fp16', action='store_true',
@@ -197,7 +287,7 @@ def get_args():
                         help="Linear warmup over warmup_steps.")
     parser.add_argument("--adam_epsilon", default=1e-8, type=float,
                         help="Epsilon for Adam optimizer.")
-    parser.add_argument("--learning_rate", default=3e-5, type=float,
+    parser.add_argument("--learning_rate", default=5e-5, type=float,
                         help="The initial learning rate for Adam.")
 
     parser.add_argument('--seed', type=int, default=42,
@@ -288,7 +378,7 @@ def main():
         raise ValueError("Invalid gradient_accumulation_steps parameter: {}, should be >= 1".format(
                             args.gradient_accumulation_steps))
 
-    args.batch_size = args.batch_size // args.gradient_accumulation_steps
+    # args.batch_size = args.batch_size // args.gradient_accumulation_steps
 
     print("CUDA device count: {}".format(torch.cuda.device_count()))
 
@@ -305,21 +395,15 @@ def main():
     tokenizer = BertTokenizer.from_pretrained(args.bert_model, do_lower_case=args.do_lower_case)
 
     num_train_optimization_steps = int(
-        total_train_examples / args.batch_size / args.gradient_accumulation_steps)
+        total_train_examples / args.batch_size)
     if args.local_rank != -1:
         num_train_optimization_steps = num_train_optimization_steps // args.world_size
 
-    # Prepare model
     model = BertForPreTraining.from_pretrained(args.bert_model)
     if args.fp16:
         model.half()
     model.to(device)
     if args.local_rank != -1:
-        try:
-            from apex.parallel import DistributedDataParallel as DDP
-        except ImportError:
-            raise ImportError(
-                "Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training.")
         model = DDP(model)
     elif n_gpu > 1:
         model = torch.nn.DataParallel(model)
@@ -334,13 +418,6 @@ def main():
     ]
 
     if args.fp16:
-        try:
-            from apex.optimizers import FP16_Optimizer
-            from apex.optimizers import FusedAdam
-        except ImportError:
-            raise ImportError(
-                "Please install apex from https://www.github.com/nvidia/apex to use distributed and fp16 training.")
-
         optimizer = FusedAdam(optimizer_grouped_parameters,
                               lr=args.learning_rate,
                               bias_correction=False,
@@ -352,9 +429,14 @@ def main():
     else:
         optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
     # scheduler not compatible with APEX::FP16_optimizer
-    # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=num_train_optimization_steps)
+    scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=num_train_optimization_steps)
 
-    global_step = 0
+    if args.output_dir:
+        last_checkpoint = check_files(args.output_dir, args.bert_model)
+        last_epoch, global_step = restore_checkpoint(model, optimizer, last_checkpoint, device)
+    else:
+        last_epoch, global_step = 0, 0
+
     logging.info("***** Running training *****")
     logging.info(f"  Num examples = {total_train_examples}")
     logging.info("  Batch size = %d", args.batch_size)
@@ -362,16 +444,16 @@ def main():
 
 
     iteration = 0
-    timers = Timers()
     benchmark_stats = defaultdict(lambda: [])
     grad_stats = defaultdict(lambda: [])
+    summary_writer = SummaryWriter() if args.rank == 0 else None
 
     model.train()
-    for epoch in range(args.epochs):
-        
+    for epoch in range(last_epoch, args.epochs):
         shuffled_chunks = get_chunks(args.pregenerated_data, epoch)
         random.shuffle(shuffled_chunks)
         logging.info('New shuffled chunks: {}'.format(shuffled_chunks))
+        
 
         for chunk in shuffled_chunks:
             epoch_dataset = PregeneratedDataset(epoch=epoch, chunk=chunk, training_path=args.pregenerated_data, tokenizer=tokenizer,
@@ -382,10 +464,12 @@ def main():
                 train_sampler = DistributedSampler(epoch_dataset)
             train_dataloader = DataLoader(epoch_dataset, sampler=train_sampler, batch_size=args.batch_size, num_workers=args.num_workers)
             data_iterator = iter(train_dataloader)
+            timers = Timers()
+            timers('interval time').start()
             tr_loss = 0
             nb_tr_examples, nb_tr_steps = 0, 0
-            timers('interval time').start()
-            while iteration < args.train_iters:
+            for batch in data_iterator:
+            # while iteration < args.train_iters:
                 if args.nvprof:
                     if iteration == args.profile_start:
                         profile_cuda.profile_start()
@@ -397,7 +481,7 @@ def main():
                 iteration += 1
 
                 # benchmark dataloading time
-                batch = next(data_iterator)
+                # batch = next(data_iterator)
 
                 batch = tuple(t.to(device) for t in batch)
                 input_ids, input_mask, segment_ids, lm_label_ids, is_next = batch
@@ -406,7 +490,17 @@ def main():
                 if n_gpu > 1:
                     loss = loss.mean() # mean() to average on multi-gpu.
                 if args.gradient_accumulation_steps > 1:
-                    loss = loss / args.gradient_accumulation_steps
+                    # loss = loss / args.gradient_accumulation_steps
+                    if args.local_rank != -1:
+                        if iteration % args.gradient_accumulation_steps == 0:
+                            # we are using APEX DDP => enable_allreduce / disable_allreduce
+                            # print("iteration {}, all reduce enabled!".format(iteration))
+                            model.enable_allreduce()
+                        else:
+                            # print("iteration {}, all reduce disabled!".format(iteration))
+                            model.disable_allreduce()
+
+                # note that loss.backward accumulates the gradient => gradient will be accumulated until we call zero_grad
                 if args.fp16:
                     optimizer.backward(loss)
                 else:
@@ -415,23 +509,29 @@ def main():
                 tr_loss += loss.item()
                 nb_tr_examples += input_ids.size(0)
                 nb_tr_steps += 1
-                mean_loss = tr_loss * args.gradient_accumulation_steps / nb_tr_steps
+                # mean_loss = tr_loss * args.gradient_accumulation_steps / nb_tr_steps
+                mean_loss = tr_loss / nb_tr_steps
+
 
                 if iteration % args.gradient_accumulation_steps == 0:
                     start = time.time()
-                    # scheduler.step()  # Update learning rate schedule (commented as lr_scheduler not compatible with FP16_Optimizer)
+                    scheduler.step()  # Update learning rate schedule (commented as lr_scheduler not compatible with FP16_Optimizer)
                     optimizer.step()
                     optimizer.zero_grad()
-                    benchmark_stats['weight_update_time'] = (time.time() - start) # unit in s
+                    benchmark_stats['weight_update_time'].append(time.time() - start) # unit in s
                     global_step += 1
 
                 if iteration % args.log_interval == 0:
                     elapsed_time = timers('interval time').elapsed()
                     log_string = ' epoch{:2d} |'.format(epoch)
-                    log_string += ' iteration {:8d}/{:8d} |'.format(iteration, args.train_iters)
+                    log_string += ' iteration {:8d} |'.format(iteration)
                     log_string += ' elapsed time per iteration (ms): {:.1f} |'.format(elapsed_time * 1000.0 / args.log_interval)
                     log_string += ' mean loss {:.3E} |'.format(mean_loss)
 
+                    if args.rank == 0:
+                        summary_writer.add_scalar('mean_loss', mean_loss, iteration)
+                    
+                    # args.rank == 0 => this is master process
                     if args.benchmark and args.rank == 0:
                         if args.benchmark_start < iteration <= args.benchmark_stop:
                             benchmark_stats['iteration'].append(iteration)
@@ -443,14 +543,40 @@ def main():
                 
                     print(log_string, flush=True)
             
-            # delete break if not doing benchmarking
-            break
+            # Save a trained model
+            if n_gpu > 1 and torch.distributed.get_rank() or n_gpu <=1:
+                logging.info("** ** * Saving fine-tuned model ** ** * ")
+                model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+                save_checkpoint(
+                    model, 
+                    optimizer, 
+                    epoch, 
+                    global_step, 
+                    args.output_dir, 
+                    os.path.join(args.output_dir, "{}_{}.tar".format(args.bert_model, global_step))
+                )
+                model_to_save.save_pretrained(args.output_dir)
+                tokenizer.save_pretrained(args.output_dir)
 
-    # Save a trained model (comment out => don't need it for benchmarking)
-    # if  n_gpu > 1 and args.rank == 0  or n_gpu <=1 :
-    #     logging.info("** ** * Saving fine-tuned model ** ** * ")
-    #     model.save_pretrained(args.output_dir)
-    #     tokenizer.save_pretrained(args.output_dir)
+
+        # Save a trained model
+        if n_gpu > 1 and torch.distributed.get_rank() == 0  or n_gpu <=1:
+            logging.info("** ** * Saving fine-tuned model ** ** * ")
+            model_to_save = model.module if hasattr(model, 'module') else model  # Take care of distributed/parallel training
+            save_checkpoint(
+                model, 
+                optimizer, 
+                epoch, 
+                global_step, 
+                args.output_dir, 
+                os.path.join(args.output_dir, "{}_{}.tar".format(args.bert_model, global_step))
+            )
+            model_to_save.save_pretrained(args.output_dir)
+            tokenizer.save_pretrained(args.output_dir)
+
+
+    if args.rank == 0:
+        summary_writer.close()
 
     if args.benchmark and args.rank == 0:
         benchmark_csv = {
